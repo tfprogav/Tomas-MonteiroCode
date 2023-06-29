@@ -13,46 +13,53 @@ mydb = mysql.connector.connect(
 def mostrar_informacoes_aluno(aluno):
     aluno_id = aluno[0]
     aluno_nome = aluno[1]
-    aluno_curso = aluno[2]
+    curso_nome = aluno[2]
     aluno_curso_id = aluno[3]
 
     cursor = mydb.cursor()
 
-    # Média das notas do aluno no curso
-    cursor.execute("""
-    SELECT AVG(q_avaliacoes.avaliacao_nota)
-    FROM q_alunos_cursos
-    JOIN q_avaliacoes ON q_alunos_cursos.curso_id = q_avaliacoes.avaliacao_curso
-    WHERE q_alunos_cursos.aluno_id = %s AND q_alunos_cursos.curso_id = %s
-    """, (aluno_id, aluno_curso_id))
-    aluno_media = cursor.fetchone()[0]
+    # Consulta para obter a média do aluno no curso
+    cursor.execute(f"""
+        SELECT AVG(avaliacao_nota) AS media_aluno_curso
+        FROM q_avaliacoes
+        WHERE avaliacao_aluno_id = {aluno_id} AND avaliacao_curso = {aluno_curso_id}
+    """)
+    media_aluno_curso = round(cursor.fetchone()[0], 2)
 
-    # Média das notas do curso
-    cursor.execute("""
-    SELECT AVG(q_avaliacoes.avaliacao_nota)
-    FROM q_avaliacoes
-    WHERE q_avaliacoes.avaliacao_curso = %s
-    """, (aluno_curso_id,))
-    curso_media = cursor.fetchone()[0]
+    # Consulta para obter a média do curso
+    cursor.execute(f"""
+        SELECT AVG(avaliacao_nota) AS media_curso
+        FROM q_avaliacoes
+        WHERE avaliacao_curso = {aluno_curso_id}
+    """)
+    media_curso = round(cursor.fetchone()[0], 2)
 
-    # Nota máxima do curso
-    cursor.execute("""
-    SELECT MAX(q_avaliacoes.avaliacao_nota)
-    FROM q_avaliacoes
-    WHERE q_avaliacoes.avaliacao_curso = %s
-    """, (aluno_curso_id,))
+    # Consulta para obter a nota máxima do curso
+    cursor.execute(f"""
+        SELECT MAX(avaliacao_nota) AS nota_maxima
+        FROM q_avaliacoes
+        WHERE avaliacao_curso = {aluno_curso_id}
+    """)
     nota_maxima = cursor.fetchone()[0]
 
-    # Nota mínima do curso
-    cursor.execute("""
-    SELECT MIN(q_avaliacoes.avaliacao_nota)
-    FROM q_avaliacoes
-    WHERE q_avaliacoes.avaliacao_curso = %s
-    """, (aluno_curso_id,))
+    # Consulta para obter a nota mínima do curso
+    cursor.execute(f"""
+        SELECT MIN(avaliacao_nota) AS nota_minima
+        FROM q_avaliacoes
+        WHERE avaliacao_curso = {aluno_curso_id}
+    """)
     nota_minima = cursor.fetchone()[0]
 
-    messagebox.showinfo("Informações do Aluno", f"ID do Usuário: {aluno_id}\nNome: {aluno_nome}\nCurso: {aluno_curso}\nMédia das Notas do Aluno: {aluno_media:.2f}\nMédia das Notas do Curso: {curso_media:.2f}\nNota Máxima do Curso: {nota_maxima:.2f}\nNota Mínima do Curso: {nota_minima:.2f}")
-
+    messagebox.showinfo(
+        "Informações do Aluno",
+        f"ID do Usuário: {aluno_id}\n"
+        f"Nome: {aluno_nome}\n"
+        f"Curso: {curso_nome}\n"
+        f"Média do Aluno no Curso: {media_aluno_curso}\n"
+        f"Média do Curso: {media_curso}\n"
+        f"Nota Máxima: {nota_maxima}\n"
+        f"Nota Mínima: {nota_minima}"
+    )
 def gestao_performance(content_frame):
     def carregar_alunos():
         tree.delete(*tree.get_children())
