@@ -52,7 +52,6 @@ def gestao_avaliacoes(content_frame):
             entry_nota.delete(0, END)
             entry_nota.insert(0, avaliacao[3])
     def selecionar_curso(event):
-        print(selected_course.get())
         carregar_avaliacoes()
 
     tree = ttk.Treeview(content_frame, columns=("Aluno", "Curso", "Data", "Nota"), show="headings")
