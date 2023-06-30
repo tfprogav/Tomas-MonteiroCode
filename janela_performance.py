@@ -10,6 +10,7 @@ mydb = mysql.connector.connect(
     database="tf_prog_av"
 )
 
+
 def mostrar_informacoes_aluno(aluno):
     aluno_id = aluno[0]
     aluno_nome = aluno[1]
@@ -60,6 +61,8 @@ def mostrar_informacoes_aluno(aluno):
         f"Nota Máxima: {nota_maxima}\n"
         f"Nota Mínima: {nota_minima}"
     )
+
+
 def gestao_performance(content_frame):
     def carregar_alunos():
         tree.delete(*tree.get_children())

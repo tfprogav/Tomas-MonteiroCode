@@ -1,10 +1,6 @@
---------------------------SEM MEDIA --------------------------------------------------------------------------------------------
-
-
 from tkinter import *
 from tkinter import ttk
 import mysql.connector
-from tkinter import messagebox
 
 mydb = mysql.connector.connect(
     host="127.0.0.1",
@@ -13,245 +9,125 @@ mydb = mysql.connector.connect(
     database="tf_prog_av"
 )
 
-def mostrar_informacoes_aluno(aluno):
-    messagebox.showinfo("Informações do Aluno", f"ID do Usuário: {aluno[0]}\nNome: {aluno[1]}\nCurso: {aluno[2]}")
-
-def gestao_performance(content_frame):
-    def carregar_alunos():
+def gestao_avaliacoes(content_frame):
+    def carregar_avaliacoes():
         tree.delete(*tree.get_children())
 
         cursor = mydb.cursor()
-        cursor.execute("""SELECT u.utilizador_id AS aluno_id, u.utilizador_nome AS aluno, c.curso_desc AS curso, c.curso_id, COUNT(*) AS num_avaliacoes
+        cursor.execute("""SELECT u.utilizador_nome AS nome_aluno, c.curso_desc AS nome_curso, a.avaliacao_data, a.avaliacao_nota
 FROM q_avaliacoes a
 JOIN q_utilizadores u ON a.avaliacao_aluno_id = u.utilizador_id
 JOIN q_cursos c ON a.avaliacao_curso = c.curso_id
-GROUP BY u.utilizador_id, u.utilizador_nome, c.curso_desc, c.curso_id
-HAVING COUNT(*) >= 2
-ORDER BY u.utilizador_nome""")
-        alunos = cursor.fetchall()
-
-        for aluno in alunos:
-            tree.insert("", "end", values=aluno)  # Inserindo todas as colunas
-
-    def selecionar_aluno():
-        selected_item = tree.focus()
-        if selected_item:
-            aluno = tree.item(selected_item)["values"]
-            mostrar_informacoes_aluno(aluno)
-
-    for widget in content_frame.winfo_children():
-        widget.destroy()
-
-    tree = ttk.Treeview(content_frame, columns=("ID", "Nome", "Curso"), show= "headings")
-    tree.heading("ID", text="ID")
-    tree.column("ID", width=100)
-    tree.heading("Nome", text="Nome")
-    tree.column("Nome", width=150)
-    tree.heading("Curso", text="Curso")
-    tree.column("Curso", width=150)
-
-    scrollbar = ttk.Scrollbar(content_frame, orient="vertical", command=tree.yview)
-    tree.configure(yscroll=scrollbar.set)
-    scrollbar.pack(side="right", fill="y")
-    tree.pack(expand=True, fill="both")
-
-    carregar_alunos()
-
-    selecionar_button = Button(content_frame, text="Selecionar Aluno", command=selecionar_aluno)
-    selecionar_button.pack(pady=10)
-
-
-
-
-
--------------------------- COM MEDIA --------------------------------------------------------------------------------------------
-
-
-from tkinter import *
-from tkinter import ttk
-import mysql.connector
-from tkinter import messagebox
-
-mydb = mysql.connector.connect(
-    host="127.0.0.1",
-    user="root",
-    password="",
-    database="tf_prog_av"
-)
-
-def mostrar_informacoes_aluno(aluno):
-    aluno_id = aluno[0]
-    aluno_nome = aluno[1]
-    aluno_curso = aluno[2]
-    aluno_curso_id = aluno[3]
-
-
-    cursor = mydb.cursor()
-    cursor.execute("""
-    SELECT AVG(q_avaliacoes.avaliacao_nota)
-    FROM q_alunos_cursos
-    JOIN q_avaliacoes ON q_alunos_cursos.curso_id = q_avaliacoes.avaliacao_curso
-    WHERE q_alunos_cursos.aluno_id = %s AND q_alunos_cursos.curso_id = %s
-    """, (aluno_id, aluno_curso_id))
-    aluno_media = cursor.fetchone()[0]
-
-    messagebox.showinfo("Informações do Aluno", f"ID do Usuário: {aluno_id}\nNome: {aluno_nome}\nCurso: {aluno_curso}\nMédia das Notas: {aluno_media:.2f}")
-
-def gestao_performance(content_frame):
-    def carregar_alunos():
-        tree.delete(*tree.get_children())
-
-        cursor = mydb.cursor()
-        cursor.execute("""
-        SELECT q_utilizadores.utilizador_id, q_utilizadores.utilizador_nome, q_cursos.curso_desc, q_alunos_cursos.curso_id
-        FROM q_utilizadores
-        JOIN q_alunos_cursos ON q_utilizadores.utilizador_id = q_alunos_cursos.aluno_id
-        JOIN q_cursos ON q_alunos_cursos.curso_id = q_cursos.curso_id
-        """)
-        alunos = cursor.fetchall()
-
-        for aluno in alunos:
-            tree.insert("", "end", values=aluno)  # Inserindo todas as colunas
-
-    def selecionar_aluno():
-        selected_item = tree.focus()
-        if selected_item:
-            aluno = tree.item(selected_item)["values"]
-            mostrar_informacoes_aluno(aluno)
-
-    for widget in content_frame.winfo_children():
-        widget.destroy()
-
-    tree = ttk.Treeview(content_frame, columns=("ID", "Nome", "Curso"), show="headings")
-    tree.heading("ID", text="ID")
-    tree.column("ID", width=100)
-    tree.heading("Nome", text="Nome")
-    tree.column("Nome", width=150)
-    tree.heading("Curso", text="Curso")
-    tree.column("Curso", width=150)
-
-    scrollbar = ttk.Scrollbar(content_frame, orient="vertical", command=tree.yview)
-    tree.configure(yscroll=scrollbar.set)
-    scrollbar.pack(side="right", fill="y")
-    tree.pack(expand=True, fill="both")
-
-    carregar_alunos()
-
-    selecionar_button = Button(content_frame, text="Selecionar Aluno", command=selecionar_aluno)
-    selecionar_button.pack(pady=10)
-
-------------------------------------------------------------------------------------------------------
-
-
-from tkinter import *
-from tkinter import ttk
-import mysql.connector
-from tkinter import messagebox
-
-mydb = mysql.connector.connect(
-    host="127.0.0.1",
-    user="root",
-    password="",
-    database="tf_prog_av"
-)
-
-def mostrar_informacoes_aluno(aluno):
-    aluno_id = aluno[0]
-    aluno_nome = aluno[1]
-    aluno_curso = aluno[2]
-    aluno_curso_id = aluno[3]
-
-    cursor = mydb.cursor()
-
-    # Média das notas do aluno no curso
-    cursor.execute("""
-    SELECT AVG(q_avaliacoes.avaliacao_nota)
-    FROM q_alunos_cursos
-    JOIN q_avaliacoes ON q_alunos_cursos.curso_id = q_avaliacoes.avaliacao_curso
-    WHERE q_alunos_cursos.aluno_id = %s AND q_alunos_cursos.curso_id = %s
-    """, (aluno_id, aluno_curso_id))
-    aluno_media = cursor.fetchone()[0]
-
-    # Média das notas do curso
-    cursor.execute("""
-    SELECT AVG(q_avaliacoes.avaliacao_nota)
-    FROM q_avaliacoes
-    WHERE q_avaliacoes.avaliacao_curso = %s
-    """, (aluno_curso_id,))
-    curso_media = cursor.fetchone()[0]
-
-    # Nota máxima do curso
-    cursor.execute("""
-    SELECT MAX(q_avaliacoes.avaliacao_nota)
-    FROM q_avaliacoes
-    WHERE q_avaliacoes.avaliacao_curso = %s
-    """, (aluno_curso_id,))
-    nota_maxima = cursor.fetchone()[0]
-
-    # Nota mínima do curso
-    cursor.execute("""
-    SELECT MIN(q_avaliacoes.avaliacao_nota)
-    FROM q_avaliacoes
-    WHERE q_avaliacoes.avaliacao_curso = %s
-    """, (aluno_curso_id,))
-    nota_minima = cursor.fetchone()[0]
-
-    messagebox.showinfo("Informações do Aluno", f"ID do Usuário: {aluno_id}\nNome: {aluno_nome}\nCurso: {aluno_curso}\nMédia das Notas do Aluno: {aluno_media:.2f}\nMédia das Notas do Curso: {curso_media:.2f}\nNota Máxima do Curso: {nota_maxima:.2f}\nNota Mínima do Curso: {nota_minima:.2f}")
-    print(aluno_id, aluno_nome, aluno_curso, aluno_media, curso_media, nota_maxima, nota_minima)
-
-def gestao_performance(content_frame):
-    def carregar_alunos():
-        tree.delete(*tree.get_children())
-
-        cursor = mydb.cursor()
-        cursor.execute("""SELECT u.utilizador_id AS aluno_id, u.utilizador_nome AS aluno, c.curso_desc AS curso, c.curso_id, COUNT(*) AS num_avaliacoes
-FROM q_avaliacoes a
-JOIN q_utilizadores u ON a.avaliacao_aluno_id = u.utilizador_id
-JOIN q_cursos c ON a.avaliacao_curso = c.curso_id
-GROUP BY u.utilizador_id, u.utilizador_nome, c.curso_desc, c.curso_id
-HAVING COUNT(*) >= 2
-ORDER BY u.utilizador_nome;
 """)
-        alunos = cursor.fetchall()
+        avaliacoes = cursor.fetchall()
 
-        for aluno in alunos:
-            tree.insert("", "end", values=aluno)  # Inserindo todas as colunas
+        for avaliacao in avaliacoes:
+            tree.insert("", "end", values=avaliacao)
 
-    def selecionar_aluno():
+    def adicionar_avaliacao():
+        aluno = entry_aluno.get()
+        disciplina = entry_disciplina.get()
+        nota = entry_nota.get()
+        data = entry_data.get()
+
+        cursor = mydb.cursor()
+        query = "INSERT INTO q_avaliacoes (avaliacao_aluno_id, avaliacao_curso, avaliacao_nota, avaliacao_data) VALUES (%s, %s, %s, %s)"
+        values = (aluno, disciplina, nota, data)
+        cursor.execute(query, values)
+        mydb.commit()
+
+        carregar_avaliacoes()
+
+    def editar_avaliacao():
         selected_item = tree.focus()
         if selected_item:
-            aluno = tree.item(selected_item)["values"]
-            mostrar_informacoes_aluno(aluno)
+            avaliacao = tree.item(selected_item)["values"]
+            data, aluno, disciplina, nota = avaliacao
+
+            id_avaliacao = avaliacao[0]
+
+            aluno = entry_aluno.get()
+            disciplina = entry_disciplina.get()
+            nota = entry_nota.get()
+            data = entry_data.get()
+
+            cursor = mydb.cursor()
+            query = "UPDATE q_avaliacoes SET avaliacao_aluno_id = %s, avaliacao_curso = %s, avaliacao_nota = %s, avaliacao_data = %s WHERE avaliacao_id = %s"
+            values = (aluno, disciplina, nota, data, id_avaliacao)
+            cursor.execute(query, values)
+            mydb.commit()
+
+            carregar_avaliacoes()
+
+    def excluir_avaliacao():
+        selected_item = tree.focus()
+        if selected_item:
+            avaliacao = tree.item(selected_item)["values"]
+            id_avaliacao = avaliacao[0]
+
+            cursor = mydb.cursor()
+            query = "DELETE FROM q_avaliacoes WHERE avaliacao_id = %s"
+            value = (id_avaliacao,)
+            cursor.execute(query, value)
+            mydb.commit()
+
+            carregar_avaliacoes()
 
     for widget in content_frame.winfo_children():
         widget.destroy()
 
-    tree = ttk.Treeview(content_frame, columns=("ID", "Nome", "Curso"), show="headings")
-    tree.heading("ID", text="ID")
-    tree.column("ID", width=100)
-    tree.heading("Nome", text="Nome")
-    tree.column("Nome", width=150)
+    tree = ttk.Treeview(content_frame, columns=("Aluno", "Curso", "Data", "Nota"), show="headings")
+    tree.heading("Aluno", text="Aluno")
+    tree.column("Aluno", width=150)
     tree.heading("Curso", text="Curso")
     tree.column("Curso", width=150)
+    tree.heading("Data", text="Data")
+    tree.column("Data", width=100)
+    tree.heading("Nota", text="Nota")
+    tree.column("Nota", width=50)
 
     scrollbar = ttk.Scrollbar(content_frame, orient="vertical", command=tree.yview)
     tree.configure(yscroll=scrollbar.set)
     scrollbar.pack(side="right", fill="y")
     tree.pack(expand=True, fill="both")
 
-    carregar_alunos()
+    carregar_avaliacoes()
 
-    selecionar_button = Button(content_frame, text="Selecionar Aluno", command=selecionar_aluno)
-    selecionar_button.pack(pady=10)
+    label_aluno = Label(content_frame, text="Aluno:")
+    label_aluno.pack()
+    entry_aluno = Entry(content_frame)
+    entry_aluno.pack()
 
+    label_disciplina = Label(content_frame, text="Curso:")
+    label_disciplina.pack()
+    entry_disciplina = Entry(content_frame)
+    entry_disciplina.pack()
 
-------------------------------( este funciona na perfeição )-----------------------------------
+    label_data = Label(content_frame, text="Data:")
+    label_data.pack()
+    entry_data = Entry(content_frame)
+    entry_data.pack()
+
+    label_nota = Label(content_frame, text="Nota:")
+    label_nota.pack()
+    entry_nota = Entry(content_frame)
+    entry_nota.pack()
+
+    adicionar_button = Button(content_frame, text="Adicionar", command=adicionar_avaliacao)
+    adicionar_button.pack(pady=5)
+
+    editar_button = Button(content_frame, text="Editar", command=editar_avaliacao)
+    editar_button.pack(pady=5)
+
+    excluir_button = Button(content_frame, text="Excluir", command=excluir_avaliacao)
+    excluir_button.pack(pady=5)
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 from tkinter import *
 from tkinter import ttk
 import mysql.connector
-from tkinter import messagebox
 
 mydb = mysql.connector.connect(
     host="127.0.0.1",
@@ -260,97 +136,477 @@ mydb = mysql.connector.connect(
     database="tf_prog_av"
 )
 
-def mostrar_informacoes_aluno(aluno):
-    aluno_id = aluno[0]
-    aluno_nome = aluno[1]
-    curso_nome = aluno[2]
-
-    cursor = mydb.cursor()
-
-    # Consulta para obter a média do aluno no curso
-    cursor.execute(f"""
-        SELECT AVG(avaliacao_nota) AS media_aluno_curso
-        FROM q_avaliacoes
-        WHERE avaliacao_aluno_id = {aluno_id} AND avaliacao_curso = {aluno[3]}
-    """)
-    media_aluno_curso = cursor.fetchone()[0]
-
-    # Consulta para obter a média do curso
-    cursor.execute(f"""
-        SELECT AVG(avaliacao_nota) AS media_curso
-        FROM q_avaliacoes
-        WHERE avaliacao_curso = {aluno[3]}
-    """)
-    media_curso = cursor.fetchone()[0]
-
-    # Consulta para obter a nota máxima do curso
-    cursor.execute(f"""
-        SELECT MAX(avaliacao_nota) AS nota_maxima
-        FROM q_avaliacoes
-        WHERE avaliacao_curso = {aluno[3]}
-    """)
-    nota_maxima = cursor.fetchone()[0]
-
-    # Consulta para obter a nota mínima do curso
-    cursor.execute(f"""
-        SELECT MIN(avaliacao_nota) AS nota_minima
-        FROM q_avaliacoes
-        WHERE avaliacao_curso = {aluno[3]}
-    """)
-    nota_minima = cursor.fetchone()[0]
-
-    messagebox.showinfo(
-        "Informações do Aluno",
-        f"ID do Usuário: {aluno_id}\n"
-        f"Nome: {aluno_nome}\n"
-        f"Curso: {curso_nome}\n"
-        f"Média do Aluno no Curso: {media_aluno_curso}\n"
-        f"Média do Curso: {media_curso}\n"
-        f"Nota Máxima: {nota_maxima}\n"
-        f"Nota Mínima: {nota_minima}"
-    )
-def gestao_performance(content_frame):
-    def carregar_alunos():
+def gestao_avaliacoes(content_frame):
+    selected_course = None
+    def carregar_avaliacoes():
         tree.delete(*tree.get_children())
 
         cursor = mydb.cursor()
-        cursor.execute("""SELECT u.utilizador_id AS aluno_id, u.utilizador_nome AS aluno, c.curso_desc AS curso, c.curso_id, COUNT(*) AS num_avaliacoes
-FROM q_avaliacoes a
-JOIN q_utilizadores u ON a.avaliacao_aluno_id = u.utilizador_id
-JOIN q_cursos c ON a.avaliacao_curso = c.curso_id
-GROUP BY u.utilizador_id, u.utilizador_nome, c.curso_desc, c.curso_id
-HAVING COUNT(*) >= 2
-ORDER BY u.utilizador_nome;
-""")
-        alunos = cursor.fetchall()
+        if selected_course:
+            query = """
+                SELECT u.utilizador_nome AS nome_aluno, c.curso_desc AS nome_curso, a.avaliacao_data, a.avaliacao_nota
+                FROM q_avaliacoes a
+                JOIN q_utilizadores u ON a.avaliacao_aluno_id = u.utilizador_id
+                JOIN q_cursos c ON a.avaliacao_curso = c.curso_id
+                WHERE c.curso_id = %s
+            """
+            cursor.execute(query, (selected_course,))
+        else:
+            query = """
+                SELECT u.utilizador_nome AS nome_aluno, c.curso_desc AS nome_curso, a.avaliacao_data, a.avaliacao_nota
+                FROM q_avaliacoes a
+                JOIN q_utilizadores u ON a.avaliacao_aluno_id = u.utilizador_id
+                JOIN q_cursos c ON a.avaliacao_curso = c.curso_id
+            """
+            cursor.execute(query)
 
-        for aluno in alunos:
-            tree.insert("", "end", values=aluno)  # Inserindo todas as colunas
+        avaliacoes = cursor.fetchall()
 
-    def selecionar_aluno():
+        for avaliacao in avaliacoes:
+            tree.insert("", "end", values=avaliacao)
+
+    def adicionar_avaliacao():
+        aluno = entry_aluno.get()
+        disciplina = entry_disciplina.get()
+        nota = entry_nota.get()
+        data = entry_data.get()
+
+        cursor = mydb.cursor()
+        query = """
+            INSERT INTO q_avaliacoes (avaliacao_aluno_id, avaliacao_curso, avaliacao_nota, avaliacao_data)
+            SELECT %s, %s, %s, %s
+            FROM q_alunos_cursos ac
+            WHERE ac.aluno_id = %s AND ac.curso_id = %s
+        """
+        values = (aluno, disciplina, nota, data, aluno, selected_course)
+        cursor.execute(query, values)
+        mydb.commit()
+
+        carregar_avaliacoes()
+
+    def editar_avaliacao():
         selected_item = tree.focus()
         if selected_item:
-            aluno = tree.item(selected_item)["values"]
-            mostrar_informacoes_aluno(aluno)
+            avaliacao = tree.item(selected_item)["values"]
+            data, aluno, disciplina, nota = avaliacao
 
-    for widget in content_frame.winfo_children():
-        widget.destroy()
+            id_avaliacao = avaliacao[0]
 
-    tree = ttk.Treeview(content_frame, columns=("ID", "Nome", "Curso"), show="headings")
-    tree.heading("ID", text="ID")
-    tree.column("ID", width=100)
-    tree.heading("Nome", text="Nome")
-    tree.column("Nome", width=150)
+            aluno = entry_aluno.get()
+            disciplina = entry_disciplina.get()
+            nota = entry_nota.get()
+            data = entry_data.get()
+
+            cursor = mydb.cursor()
+            query = "UPDATE q_avaliacoes SET avaliacao_aluno_id = %s, avaliacao_curso = %s, avaliacao_nota = %s, avaliacao_data = %s WHERE avaliacao_id = %s"
+            values = (aluno, disciplina, nota, data, id_avaliacao)
+            cursor.execute(query, values)
+            mydb.commit()
+
+            carregar_avaliacoes()
+
+    def excluir_avaliacao():
+        selected_item = tree.focus()
+        if selected_item:
+            avaliacao = tree.item(selected_item)["values"]
+            id_avaliacao = avaliacao[0]
+
+            cursor = mydb.cursor()
+            query = "DELETE FROM q_avaliacoes WHERE avaliacao_id = %s"
+            value = (id_avaliacao,)
+            cursor.execute(query, value)
+            mydb.commit()
+
+            carregar_avaliacoes()
+
+    def selecionar_curso(event):
+        global selected_course
+        selected_course = combo_curso.get()
+        carregar_avaliacoes()
+
+    tree = ttk.Treeview(content_frame, columns=("Aluno", "Curso", "Data", "Nota"), show="headings")
+    tree.heading("Aluno", text="Aluno")
+    tree.column("Aluno", width=150)
     tree.heading("Curso", text="Curso")
     tree.column("Curso", width=150)
+    tree.heading("Data", text="Data")
+    tree.column("Data", width=100)
+    tree.heading("Nota", text="Nota")
+    tree.column("Nota", width=50)
 
     scrollbar = ttk.Scrollbar(content_frame, orient="vertical", command=tree.yview)
     tree.configure(yscroll=scrollbar.set)
     scrollbar.pack(side="right", fill="y")
     tree.pack(expand=True, fill="both")
 
-    carregar_alunos()
+    carregar_avaliacoes()
 
-    selecionar_button = Button(content_frame, text="Selecionar Aluno", command=selecionar_aluno)
-    selecionar_button.pack(pady=10)
+    label_data = Label(content_frame, text="Data:")
+    label_data.pack()
+    entry_data = Entry(content_frame)
+    entry_data.pack()
 
+    label_aluno = Label(content_frame, text="Aluno:")
+    label_aluno.pack()
+    entry_aluno = Entry(content_frame)
+    entry_aluno.pack()
+
+    label_disciplina = Label(content_frame, text="Curso:")
+    label_disciplina.pack()
+    entry_disciplina = Entry(content_frame)
+    entry_disciplina.pack()
+
+    label_nota = Label(content_frame, text="Nota:")
+    label_nota.pack()
+    entry_nota = Entry(content_frame)
+    entry_nota.pack()
+
+    adicionar_button = Button(content_frame, text="Adicionar", command=adicionar_avaliacao)
+    adicionar_button.pack(pady=5)
+
+    editar_button = Button(content_frame, text="Editar", command=editar_avaliacao)
+    editar_button.pack(pady=5)
+
+    excluir_button = Button(content_frame, text="Excluir", command=excluir_avaliacao)
+    excluir_button.pack(pady=5)
+
+    cursor = mydb.cursor()
+    cursor.execute("SELECT curso_id, curso_desc FROM q_cursos")
+    cursos = cursor.fetchall()
+
+    combo_curso = ttk.Combobox(content_frame, values=[curso[1] for curso in cursos])
+    combo_curso.current(0)
+    combo_curso.bind("<<ComboboxSelected>>", selecionar_curso)
+    combo_curso.pack(pady=5)
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+from tkinter import *
+from tkinter import ttk
+import mysql.connector
+
+mydb = mysql.connector.connect(
+    host="127.0.0.1",
+    user="root",
+    password="",
+    database="tf_prog_av"
+)
+
+
+def gestao_avaliacoes(content_frame):
+    selected_course = None
+
+    def carregar_avaliacoes():
+        tree.delete(*tree.get_children())
+
+        cursor = mydb.cursor()
+        if selected_course:
+            query = """
+                SELECT u.utilizador_nome AS nome_aluno, c.curso_desc AS nome_curso, a.avaliacao_data, a.avaliacao_nota, a.avaliacao_id
+                FROM q_avaliacoes a
+                JOIN q_utilizadores u ON a.avaliacao_aluno_id = u.utilizador_id
+                JOIN q_cursos c ON a.avaliacao_curso = c.curso_id
+                WHERE c.curso_desc = %s
+            """
+            cursor.execute(query, (selected_course,))
+        else:
+            query = """
+                SELECT u.utilizador_nome AS nome_aluno, c.curso_desc AS nome_curso, a.avaliacao_data, a.avaliacao_nota, a.avaliacao_id
+                FROM q_avaliacoes a
+                JOIN q_utilizadores u ON a.avaliacao_aluno_id = u.utilizador_id
+                JOIN q_cursos c ON a.avaliacao_curso = c.curso_id
+            """
+            cursor.execute(query)
+
+        avaliacoes = cursor.fetchall()
+
+        for avaliacao in avaliacoes:
+            tree.insert("", "end", values=avaliacao)
+
+    def adicionar_avaliacao():
+        aluno = entry_aluno.get()
+        disciplina = entry_disciplina.get()
+        nota = entry_nota.get()
+        data = entry_data.get()
+
+        cursor = mydb.cursor()
+        query = """
+            INSERT INTO q_avaliacoes (avaliacao_aluno_id, avaliacao_curso, avaliacao_nota, avaliacao_data)
+            SELECT %s, c.curso_id, %s, %s
+            FROM q_cursos c
+            WHERE c.curso_desc = %s
+        """
+        values = (aluno, nota, data, disciplina)
+        cursor.execute(query, values)
+        mydb.commit()
+
+        carregar_avaliacoes()
+
+    def editar_avaliacao():
+        selected_item = tree.focus()
+        if selected_item:
+            avaliacao = tree.item(selected_item)["values"]
+            id_avaliacao = avaliacao[4]
+
+            aluno = entry_aluno.get()
+            disciplina = entry_disciplina.get()
+            nota = entry_nota.get()
+            data = entry_data.get()
+
+            cursor = mydb.cursor()
+            query = "UPDATE q_avaliacoes SET avaliacao_aluno_id = %s, avaliacao_curso = (SELECT curso_id FROM q_cursos WHERE curso_desc = %s), avaliacao_nota = %s, avaliacao_data = %s WHERE avaliacao_id = %s"
+            values = (aluno, disciplina, nota, data, id_avaliacao)
+            cursor.execute(query, values)
+            mydb.commit()
+
+            carregar_avaliacoes()
+
+    def excluir_avaliacao():
+        selected_item = tree.focus()
+        if selected_item:
+            avaliacao = tree.item(selected_item)["values"]
+            id_avaliacao = avaliacao[4]  # Index 4 corresponds to the 'avaliacao_id'
+
+            cursor = mydb.cursor()
+            query = "DELETE FROM q_avaliacoes WHERE avaliacao_id = %s"
+            value = (id_avaliacao,)
+            cursor.execute(query, value)
+            mydb.commit()
+
+            carregar_avaliacoes()
+
+    def selecionar_curso(event):
+        global selected_course
+        selected_course = combo_curso.get()
+        carregar_avaliacoes()
+
+    tree = ttk.Treeview(content_frame, columns=("Aluno", "Curso", "Data", "Nota"), show="headings")
+    tree.heading("Aluno", text="Aluno")
+    tree.column("Aluno", width=150)
+    tree.heading("Curso", text="Curso")
+    tree.column("Curso", width=150)
+    tree.heading("Data", text="Data")
+    tree.column("Data", width=100)
+    tree.heading("Nota", text="Nota")
+    tree.column("Nota", width=50)
+
+    scrollbar = ttk.Scrollbar(content_frame, orient="vertical", command=tree.yview)
+    tree.configure(yscroll=scrollbar.set)
+    scrollbar.pack(side="right", fill="y")
+    tree.pack(expand=True, fill="both")
+
+    carregar_avaliacoes()
+
+    label_data = Label(content_frame, text="Data:")
+    label_data.pack()
+    entry_data = Entry(content_frame)
+    entry_data.pack()
+
+    label_aluno = Label(content_frame, text="Aluno:")
+    label_aluno.pack()
+    entry_aluno = Entry(content_frame)
+    entry_aluno.pack()
+
+    label_disciplina = Label(content_frame, text="Curso:")
+    label_disciplina.pack()
+    entry_disciplina = Entry(content_frame)
+    entry_disciplina.pack()
+
+    label_nota = Label(content_frame, text="Nota:")
+    label_nota.pack()
+    entry_nota = Entry(content_frame)
+    entry_nota.pack()
+
+    adicionar_button = Button(content_frame, text="Adicionar", command=adicionar_avaliacao)
+    adicionar_button.pack(pady=5)
+
+    editar_button = Button(content_frame, text="Editar", command=editar_avaliacao)
+    editar_button.pack(pady=5)
+
+    excluir_button = Button(content_frame, text="Excluir", command=excluir_avaliacao)
+    excluir_button.pack(pady=5)
+
+    cursor = mydb.cursor()
+    cursor.execute("SELECT curso_desc FROM q_cursos")
+    cursos = cursor.fetchall()
+
+    combo_curso = ttk.Combobox(content_frame, values=[curso[0] for curso in cursos])
+    combo_curso.insert(0, "Todos")
+    combo_curso.bind("<<ComboboxSelected>>", selecionar_curso)
+    combo_curso.pack(pady=5)
+
+
+
+--------------------------------------------------( mostra com seleção do curso )---------------------------------------------------------------------------------------------------------
+
+
+
+from tkinter import *
+from tkinter import ttk
+import mysql.connector
+
+mydb = mysql.connector.connect(
+    host="127.0.0.1",
+    user="root",
+    password="",
+    database="tf_prog_av"
+)
+
+def gestao_avaliacoes(content_frame):
+    selected_course = StringVar()
+
+    for widget in content_frame.winfo_children():
+        widget.destroy()
+
+    def carregar_avaliacoes():
+        tree.delete(*tree.get_children())
+        cursor = mydb.cursor()
+        if selected_course.get() == "Todos" or not selected_course.get():
+            query = """
+                SELECT u.utilizador_nome AS nome_aluno, c.curso_desc AS nome_curso, a.avaliacao_data, a.avaliacao_nota, a.avaliacao_id
+                FROM q_avaliacoes a
+                JOIN q_utilizadores u ON a.avaliacao_aluno_id = u.utilizador_id
+                JOIN q_cursos c ON a.avaliacao_curso = c.curso_id
+            """
+            cursor.execute(query)
+        else:
+            query = """
+                SELECT u.utilizador_nome AS nome_aluno, c.curso_desc AS nome_curso, a.avaliacao_data, a.avaliacao_nota, a.avaliacao_id
+                FROM q_avaliacoes a
+                JOIN q_utilizadores u ON a.avaliacao_aluno_id = u.utilizador_id
+                JOIN q_cursos c ON a.avaliacao_curso = c.curso_id
+                WHERE c.curso_desc = %s
+            """
+            cursor.execute(query, (selected_course.get(),))
+        avaliacoes = cursor.fetchall()
+        for avaliacao in avaliacoes:
+            tree.insert("", "end", values=avaliacao)
+
+    def selecionar_avaliacao(event):
+        selected_item = tree.focus()
+        if selected_item:
+            avaliacao = tree.item(selected_item)["values"]
+            entry_aluno.delete(0, END)
+            entry_aluno.insert(0, avaliacao[0])
+            entry_disciplina.delete(0, END)
+            entry_disciplina.insert(0, avaliacao[1])
+            entry_data.delete(0, END)
+            entry_data.insert(0, avaliacao[2])
+            entry_nota.delete(0, END)
+            entry_nota.insert(0, avaliacao[3])
+    def selecionar_curso(event):
+        print(selected_course.get())
+        carregar_avaliacoes()
+
+    tree = ttk.Treeview(content_frame, columns=("Aluno", "Curso", "Data", "Nota"), show="headings")
+    tree.heading("Aluno", text="Aluno")
+    tree.column("Aluno", width=150)
+    tree.heading("Curso", text="Curso")
+    tree.column("Curso", width=150)
+    tree.heading("Data", text="Data")
+    tree.column("Data", width=100)
+    tree.heading("Nota", text="Nota")
+    tree.column("Nota", width=50)
+
+    scrollbar = ttk.Scrollbar(content_frame, orient="vertical", command=tree.yview)
+    tree.configure(yscroll=scrollbar.set)
+    scrollbar.pack(side="right", fill="y")
+    tree.pack(expand=True, fill="both")
+
+    tree.bind("<ButtonRelease-1>", selecionar_avaliacao)
+
+    carregar_avaliacoes()
+
+    label_data = Label(content_frame, text="Data:")
+    label_data.pack()
+    entry_data = Entry(content_frame)
+    entry_data.pack()
+
+    label_aluno = Label(content_frame, text="Aluno:")
+    label_aluno.pack()
+    entry_aluno = Entry(content_frame)
+    entry_aluno.pack()
+
+    label_disciplina = Label(content_frame, text="Curso:")
+    label_disciplina.pack()
+    entry_disciplina = Entry(content_frame)
+    entry_disciplina.pack()
+
+    label_nota = Label(content_frame, text="Nota:")
+    label_nota.pack()
+    entry_nota = Entry(content_frame)
+    entry_nota.pack()
+
+    def adicionar_avaliacao():
+        aluno = entry_aluno.get()
+        disciplina = entry_disciplina.get()
+        nota = entry_nota.get()
+        data = entry_data.get()
+
+        cursor = mydb.cursor()
+        query = """
+            INSERT INTO q_avaliacoes (avaliacao_aluno_id, avaliacao_curso, avaliacao_nota, avaliacao_data)
+            SELECT %s, c.curso_id, %s, %s
+            FROM q_cursos c
+            WHERE c.curso_desc = %s
+        """
+        values = (aluno, nota, data, disciplina)
+        cursor.execute(query, values)
+        mydb.commit()
+
+        carregar_avaliacoes()
+
+    adicionar_button = Button(content_frame, text="Adicionar", command=adicionar_avaliacao)
+    adicionar_button.pack(pady=5)
+
+    def editar_avaliacao():
+        selected_item = tree.focus()
+        if selected_item:
+            avaliacao = tree.item(selected_item)["values"]
+            id_avaliacao = avaliacao[4]
+
+            aluno = entry_aluno.get()
+            disciplina = entry_disciplina.get()
+            nota = entry_nota.get()
+            data = entry_data.get()
+
+            cursor = mydb.cursor()
+            query = "UPDATE q_avaliacoes SET avaliacao_aluno_id = %s, avaliacao_curso = (SELECT curso_id FROM q_cursos WHERE curso_desc = %s), avaliacao_nota = %s, avaliacao_data = %s WHERE avaliacao_id = %s"
+            values = (aluno, disciplina, nota, data, id_avaliacao)
+            cursor.execute(query, values)
+            mydb.commit()
+
+            carregar_avaliacoes()
+
+    editar_button = Button(content_frame, text="Editar", command=editar_avaliacao)
+    editar_button.pack(pady=5)
+
+    def excluir_avaliacao():
+        selected_item = tree.focus()
+        if selected_item:
+            avaliacao = tree.item(selected_item)["values"]
+            id_avaliacao = avaliacao[4]
+
+            cursor = mydb.cursor()
+            query = "DELETE FROM q_avaliacoes WHERE avaliacao_id = %s"
+            value = (id_avaliacao,)
+            cursor.execute(query, value)
+            mydb.commit()
+
+            carregar_avaliacoes()
+
+    excluir_button = Button(content_frame, text="Excluir", command=excluir_avaliacao)
+    excluir_button.pack(pady=5)
+
+    cursor = mydb.cursor()
+    cursor.execute("SELECT curso_desc FROM q_cursos")
+    cursos = [curso[0] for curso in cursor.fetchall()]
+    cursos.insert(0, "Todos")
+
+    combo_curso = ttk.Combobox(content_frame, values=cursos, textvariable=selected_course)
+    combo_curso.current(0)
+    combo_curso.bind("<<ComboboxSelected>>", selecionar_curso)
+    combo_curso.pack(pady=5)
