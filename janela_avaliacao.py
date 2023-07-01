@@ -20,24 +20,53 @@ def gestao_avaliacoes(content_frame):
         cursor = mydb.cursor()
         if selected_course.get() == "Todos" or not selected_course.get():
             query = """
-                SELECT u.utilizador_nome AS nome_aluno, c.curso_desc AS nome_curso, a.avaliacao_data, a.avaliacao_nota, a.avaliacao_id
-                FROM q_avaliacoes a
-                JOIN q_utilizadores u ON a.avaliacao_aluno_id = u.utilizador_id
-                JOIN q_cursos c ON a.avaliacao_curso = c.curso_id
+                SELECT 
+                    aluno.utilizador_nome AS aluno_info,
+                    q_cursos.curso_desc AS nome_curso,
+                    q_avaliacoes.avaliacao_data,
+                    q_avaliacoes.avaliacao_nota,  
+                    q_avaliacoes.avaliacao_id,
+                    q_avaliacoes.avaliacao_curso,
+                    aluno.utilizador_id AS aluno_id,
+                    professor.utilizador_id AS professor_id,
+                    professor.utilizador_nome AS professor_info 
+                FROM 
+                    q_avaliacoes 
+                INNER JOIN 
+                    q_utilizadores AS aluno ON q_avaliacoes.avaliacao_aluno_id = aluno.utilizador_id 
+                INNER JOIN 
+                    q_utilizadores AS professor ON q_avaliacoes.avaliacao_prof_id = professor.utilizador_id
+                INNER JOIN
+                    q_cursos ON q_avaliacoes.avaliacao_curso = q_cursos.curso_id;
             """
             cursor.execute(query)
         else:
             query = """
-                SELECT u.utilizador_nome AS nome_aluno, c.curso_desc AS nome_curso, a.avaliacao_data, a.avaliacao_nota, a.avaliacao_id
-                FROM q_avaliacoes a
-                JOIN q_utilizadores u ON a.avaliacao_aluno_id = u.utilizador_id
-                JOIN q_cursos c ON a.avaliacao_curso = c.curso_id
-                WHERE c.curso_desc = %s
+                SELECT 
+                    aluno.utilizador_nome AS aluno_info,
+                    q_cursos.curso_desc AS nome_curso,
+                    q_avaliacoes.avaliacao_data,
+                    q_avaliacoes.avaliacao_nota,
+                    q_avaliacoes.avaliacao_id,
+                    q_avaliacoes.avaliacao_curso,
+                    aluno.utilizador_id AS aluno_id,
+                    professor.utilizador_id AS professor_id,
+                    professor.utilizador_nome AS professor_info 
+                FROM 
+                    q_avaliacoes 
+                INNER JOIN 
+                    q_utilizadores AS aluno ON q_avaliacoes.avaliacao_aluno_id = aluno.utilizador_id 
+                INNER JOIN 
+                    q_utilizadores AS professor ON q_avaliacoes.avaliacao_prof_id = professor.utilizador_id
+                INNER JOIN
+                    q_cursos ON q_avaliacoes.avaliacao_curso = q_cursos.curso_id
+                WHERE 
+                    q_cursos.curso_desc = %s;
             """
             cursor.execute(query, (selected_course.get(),))
         avaliacoes = cursor.fetchall()
         for avaliacao in avaliacoes:
-            tree.insert("", "end", values=avaliacao)
+            tree.insert("", "end", values=avaliacao[0:4] + (avaliacao[8],))
 
     def selecionar_avaliacao(event):
         selected_item = tree.focus()
@@ -51,10 +80,13 @@ def gestao_avaliacoes(content_frame):
             entry_data.insert(0, avaliacao[2])
             entry_nota.delete(0, END)
             entry_nota.insert(0, avaliacao[3])
+            combo_professores.delete(0, END)
+            combo_professores.insert(0, avaliacao[4])
+
     def selecionar_curso(event):
         carregar_avaliacoes()
 
-    tree = ttk.Treeview(content_frame, columns=("Aluno", "Curso", "Data", "Nota"), show="headings")
+    tree = ttk.Treeview(content_frame, columns=("Aluno", "Curso", "Data", "Nota", "Professor"), show="headings")
     tree.heading("Aluno", text="Aluno")
     tree.column("Aluno", width=150)
     tree.heading("Curso", text="Curso")
@@ -63,6 +95,8 @@ def gestao_avaliacoes(content_frame):
     tree.column("Data", width=100)
     tree.heading("Nota", text="Nota")
     tree.column("Nota", width=50)
+    tree.heading("Professor", text="Professor")
+    tree.column("Professor", width=150)
 
     scrollbar = ttk.Scrollbar(content_frame, orient="vertical", command=tree.yview)
     tree.configure(yscroll=scrollbar.set)
@@ -156,7 +190,6 @@ def gestao_avaliacoes(content_frame):
         cursor.execute("SELECT utilizador_nome FROM q_utilizadores WHERE utilizador_perfil = 2")
         professores = [professor[0] for professor in cursor.fetchall()]
         combo_professores['values'] = professores
-
 
     excluir_button = Button(content_frame, text="Excluir", command=excluir_avaliacao)
     excluir_button.pack(pady=5)
