@@ -151,6 +151,13 @@ def gestao_avaliacoes(content_frame):
 
             carregar_avaliacoes()
 
+    def preencher_combobox_professores():
+        cursor = mydb.cursor()
+        cursor.execute("SELECT utilizador_nome FROM q_utilizadores WHERE utilizador_perfil = 2")
+        professores = [professor[0] for professor in cursor.fetchall()]
+        combo_professores['values'] = professores
+
+
     excluir_button = Button(content_frame, text="Excluir", command=excluir_avaliacao)
     excluir_button.pack(pady=5)
 
@@ -163,3 +170,7 @@ def gestao_avaliacoes(content_frame):
     combo_curso.current(0)
     combo_curso.bind("<<ComboboxSelected>>", selecionar_curso)
     combo_curso.pack(pady=5)
+
+    combo_professores = ttk.Combobox(content_frame)
+    combo_professores.pack(pady=5)
+    preencher_combobox_professores()
