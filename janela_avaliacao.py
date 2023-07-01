@@ -81,15 +81,6 @@ def gestao_avaliacoes(content_frame):
             entry_nota.insert(0, avaliacao[3])
             combo_professores.delete(0, END)
             combo_professores.insert(0, avaliacao[4])
-            print(avaliacao[0])
-            print(avaliacao[1])
-            print(avaliacao[2])
-            print(avaliacao[3])
-            print(avaliacao[4])
-            print(avaliacao[5])
-            print(avaliacao[6])
-            print(avaliacao[7])
-            print(avaliacao[8])
 
     def selecionar_curso(event):
         carregar_avaliacoes()
