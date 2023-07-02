@@ -184,11 +184,6 @@ def gestao_avaliacoes(content_frame):
             nota = entry_nota.get()
             data = cal.get()
             professor = combo_professores.get()
-            print(aluno)
-            print(curso)
-            print(nota)
-            print(data)
-            print(professor)
 
             cursor = mydb.cursor()
             query = """
