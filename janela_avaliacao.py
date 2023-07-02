@@ -249,7 +249,7 @@ def gestao_avaliacoes(content_frame):
 
     label_data = Label(content_frame, text="Data:")
     label_data.pack()
-    cal = DateEntry(content_frame, width=12, background='darkblue', foreground='white', borderwidth=2, date_pattern='yyyy-mm-dd')
+    cal = DateEntry(content_frame, width=12, background='grey', foreground='white', borderwidth=2, date_pattern='yyyy-mm-dd')
     cal.pack()
 
     label_nota = Label(content_frame, text="Nota:")
