@@ -90,6 +90,12 @@ ORDER BY u.utilizador_nome;
     for widget in content_frame.winfo_children():
         widget.destroy()
 
+    frame_ver_performance = Frame(content_frame)
+    frame_ver_performance.pack()
+
+    label = Label(frame_ver_performance, text='Visualização de Performance', font=('Arial', 14))
+    label.pack(pady=5)
+
     tree = ttk.Treeview(content_frame, columns=("ID", "Nome", "Curso"), show="headings")
     tree.heading("ID", text="ID")
     tree.column("ID", width=100)
