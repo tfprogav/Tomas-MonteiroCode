@@ -285,12 +285,23 @@ def gestao_avaliacoes(content_frame):
     combo_professores.pack(pady=5)
     preencher_combobox_professores()
 
-    btn_inserir = Button(content_frame, text="Inserir", command=adicionar_avaliacao)
-    btn_inserir.pack(pady=5)
-    btn_atualizar = Button(content_frame, text="Editar", command=editar_avaliacao)
-    btn_atualizar.pack(pady=5)
-    btn_apagar = Button(content_frame, text="Apagar", command=excluir_avaliacao)
-    btn_apagar.pack(pady=5)
-    btn_limpar = Button(content_frame, text="Limpar Campos", command=limpar_campos)
-    btn_limpar.pack(pady=5)
+    frame_botoes = Frame(content_frame, bg='white')
+    frame_botoes.pack(pady=5)
+    frame_gestao_avaliacoes = Frame(content_frame)
+    frame_gestao_avaliacoes.pack(anchor='center')
+
+    btn_inserir = Button(frame_botoes, text="Inserir", command=adicionar_avaliacao)
+    btn_inserir.pack(side='left', padx=5)
+
+    btn_atualizar = Button(frame_botoes, text="Editar", command=editar_avaliacao)
+    btn_atualizar.pack(side='left', padx=5)
+
+    btn_apagar = Button(frame_botoes, text="Apagar", command=excluir_avaliacao)
+    btn_apagar.pack(side='left', padx=5)
+
+    btn_limpar = Button(frame_botoes, text="Limpar Campos", command=limpar_campos)
+    btn_limpar.pack(side='left', padx=5)
+
+    # Adiciona espaço de preenchimento à direita e à esquerda do frame
+    frame_gestao_avaliacoes.pack(fill='y', pady=50)
 

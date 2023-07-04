@@ -221,6 +221,7 @@ def gestao_avaliacoes(content_frame):
 
             # Recarregar as avaliações
             carregar_avaliacoes()
+            limpar_campos()
 
     # Criação do frame para a gestão de avaliações
     frame_gestao_avaliacoes = Frame(content_frame)
