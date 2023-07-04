@@ -86,9 +86,17 @@ ORDER BY u.utilizador_nome;
         if selected_item:
             aluno = tree.item(selected_item)["values"]
             mostrar_informacoes_aluno(aluno)
+        else:
+            messagebox.showwarning("Nenhum item selecionado", "Selecione um campo para visualizar a performance.")
 
     for widget in content_frame.winfo_children():
         widget.destroy()
+
+    frame_ver_performance = Frame(content_frame)
+    frame_ver_performance.pack()
+
+    label = Label(frame_ver_performance, text='Visualização de Performance', font=('Arial', 14))
+    label.pack(pady=5)
 
     tree = ttk.Treeview(content_frame, columns=("ID", "Nome", "Curso"), show="headings")
     tree.heading("ID", text="ID")
@@ -107,3 +115,4 @@ ORDER BY u.utilizador_nome;
 
     selecionar_button = Button(content_frame, text="Selecionar Aluno", command=selecionar_aluno)
     selecionar_button.pack(pady=10)
+

@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import ttk
 import mysql.connector
 from tkcalendar import DateEntry
+from tkinter import messagebox
 
 # Conectar ao banco de dados
 mydb = mysql.connector.connect(
@@ -138,38 +139,8 @@ def gestao_avaliacoes(content_frame):
         combo_professores.delete(0, END)
 
     def adicionar_avaliacao():
-        # Obtem os valores dos campos de entrada de dados
-        aluno = combo_alunos.get()
-        curso = combo_curso.get()
-        nota = entry_nota.get()
-        data = cal.get()
-        professor = combo_professores.get()
-
-        cursor = mydb.cursor()
-        # Consulta SQL para inserir uma nova avaliação
-        query = """
-               INSERT INTO q_avaliacoes (avaliacao_aluno_id, avaliacao_prof_id, avaliacao_curso, avaliacao_data, avaliacao_nota)
-               SELECT 
-                   (SELECT utilizador_id FROM q_utilizadores WHERE utilizador_nome = %s),
-                   (SELECT utilizador_id FROM q_utilizadores WHERE utilizador_nome = %s),
-                   (SELECT curso_id FROM q_cursos WHERE curso_desc = %s),
-                   %s, %s
-           """
-        values = (aluno, professor, curso, data, nota)
-        cursor.execute(query, values)
-        mydb.commit()
-
-        # Recarrega as avaliações e limpa os campos
-        carregar_avaliacoes()
-        limpar_campos()
-
-    def editar_avaliacao():
-        selected_item = tree.focus()
-        if selected_item:
-            # Obtem os valores da avaliação selecionada
-            avaliacao = tree.item(selected_item)["values"]
-            # Obtem os valores dos campos de entrada de dados
-            id_avaliacao = avaliacao[5]
+        # Verifica se todos os campos estão preenchidos
+        if combo_alunos.get() and combo_curso.get() and entry_nota.get() and cal.get() and combo_professores.get():
             aluno = combo_alunos.get()
             curso = combo_curso.get()
             nota = entry_nota.get()
@@ -177,50 +148,86 @@ def gestao_avaliacoes(content_frame):
             professor = combo_professores.get()
 
             cursor = mydb.cursor()
-            # Consulta SQL para atualizar a avaliação
             query = """
-                   UPDATE q_avaliacoes SET 
-                       avaliacao_aluno_id = (
-                           SELECT aluno.utilizador_id
-                           FROM q_utilizadores aluno
-                           WHERE aluno.utilizador_nome = %s
-                       ),
-                       avaliacao_curso = (
-                           SELECT c.curso_id
-                           FROM q_cursos c
-                           WHERE c.curso_desc = %s
-                       ),
-                       avaliacao_nota = %s,
-                       avaliacao_data = %s,
-                       avaliacao_prof_id = (
-                           SELECT professor.utilizador_id
-                           FROM q_utilizadores professor
-                           WHERE professor.utilizador_nome = %s
-                       )
-                   WHERE avaliacao_id = %s
+                   INSERT INTO q_avaliacoes (avaliacao_aluno_id, avaliacao_prof_id, avaliacao_curso, avaliacao_data, avaliacao_nota)
+                   SELECT 
+                       (SELECT utilizador_id FROM q_utilizadores WHERE utilizador_nome = %s),
+                       (SELECT utilizador_id FROM q_utilizadores WHERE utilizador_nome = %s),
+                       (SELECT curso_id FROM q_cursos WHERE curso_desc = %s),
+                       %s, %s
                """
-            values = (aluno, curso, nota, data, professor, id_avaliacao)
+            values = (aluno, professor, curso, data, nota)
             cursor.execute(query, values)
             mydb.commit()
 
-            # Recarrega as avaliações e limpa os campos
             carregar_avaliacoes()
             limpar_campos()
+        else:
+            messagebox.showinfo("Erro", "Preencha todos os campos para inserir uma avaliação.")
 
-    def excluir_avaliacao():
+    def editar_avaliacao():
         selected_item = tree.focus()
         if selected_item:
             avaliacao = tree.item(selected_item)["values"]
             id_avaliacao = avaliacao[5]
+            if combo_alunos.get() and combo_curso.get() and entry_nota.get() and cal.get() and combo_professores.get():
+                aluno = combo_alunos.get()
+                curso = combo_curso.get()
+                nota = entry_nota.get()
+                data = cal.get()
+                professor = combo_professores.get()
 
-            cursor = mydb.cursor()
-            query = "DELETE FROM q_avaliacoes WHERE avaliacao_id = %s"
-            value = (id_avaliacao,)
-            cursor.execute(query, value)
-            mydb.commit()
+                cursor = mydb.cursor()
+                query = """
+                       UPDATE q_avaliacoes SET 
+                           avaliacao_aluno_id = (
+                               SELECT aluno.utilizador_id
+                               FROM q_utilizadores aluno
+                               WHERE aluno.utilizador_nome = %s
+                           ),
+                           avaliacao_curso = (
+                               SELECT c.curso_id
+                               FROM q_cursos c
+                               WHERE c.curso_desc = %s
+                           ),
+                           avaliacao_nota = %s,
+                           avaliacao_data = %s,
+                           avaliacao_prof_id = (
+                               SELECT prof.utilizador_id
+                               FROM q_utilizadores prof
+                               WHERE prof.utilizador_nome = %s
+                           )
+                       WHERE avaliacao_id = %s
+               """
+                values = (aluno, curso, nota, data, professor, id_avaliacao)
+                cursor.execute(query, values)
+                mydb.commit()
 
-            # Recarregar as avaliações
-            carregar_avaliacoes()
+                carregar_avaliacoes()
+                limpar_campos()
+            else:
+                messagebox.showinfo("Erro", "Preencha todos os campos para editar uma avaliação.")
+        else:
+            messagebox.showinfo("Erro", "Selecione uma avaliação para editar.")
+
+    def excluir_avaliacao():
+        selected_item = tree.focus()
+        if selected_item:
+            result = messagebox.askyesno("Excluir", "Tem certeza que deseja excluir a avaliação selecionada?")
+            if result:
+                avaliacao = tree.item(selected_item)["values"]
+                id_avaliacao = avaliacao[5]
+
+                cursor = mydb.cursor()
+                query = "DELETE FROM q_avaliacoes WHERE avaliacao_id = %s"
+                values = (id_avaliacao,)
+                cursor.execute(query, values)
+                mydb.commit()
+
+                carregar_avaliacoes()
+                limpar_campos()
+        else:
+            messagebox.showinfo("Erro", "Selecione uma avaliação para excluir.")
 
     # Criação do frame para a gestão de avaliações
     frame_gestao_avaliacoes = Frame(content_frame)
@@ -302,6 +309,5 @@ def gestao_avaliacoes(content_frame):
     btn_limpar = Button(frame_botoes, text="Limpar Campos", command=limpar_campos)
     btn_limpar.pack(side='left', padx=5)
 
-    # Adiciona espaço de preenchimento à direita e à esquerda do frame
     frame_gestao_avaliacoes.pack(fill='y', pady=50)
 

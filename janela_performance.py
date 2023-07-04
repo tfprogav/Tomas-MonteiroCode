@@ -86,6 +86,8 @@ ORDER BY u.utilizador_nome;
         if selected_item:
             aluno = tree.item(selected_item)["values"]
             mostrar_informacoes_aluno(aluno)
+        else:
+            messagebox.showwarning("Nenhum item selecionado", "Selecione um campo para visualizar a performance.")
 
     for widget in content_frame.winfo_children():
         widget.destroy()
