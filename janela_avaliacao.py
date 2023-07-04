@@ -137,8 +137,10 @@ def gestao_avaliacoes(content_frame):
         cal.delete(0, END)
         entry_nota.delete(0, END)
         combo_professores.delete(0, END)
+        combo_curso.current(0)
 
     def adicionar_avaliacao():
+
         # Verifica se todos os campos estão preenchidos
         if combo_alunos.get() and combo_curso.get() and entry_nota.get() and cal.get() and combo_professores.get():
             aluno = combo_alunos.get()
@@ -147,21 +149,29 @@ def gestao_avaliacoes(content_frame):
             data = cal.get()
             professor = combo_professores.get()
 
-            cursor = mydb.cursor()
-            query = """
-                   INSERT INTO q_avaliacoes (avaliacao_aluno_id, avaliacao_prof_id, avaliacao_curso, avaliacao_data, avaliacao_nota)
-                   SELECT 
-                       (SELECT utilizador_id FROM q_utilizadores WHERE utilizador_nome = %s),
-                       (SELECT utilizador_id FROM q_utilizadores WHERE utilizador_nome = %s),
-                       (SELECT curso_id FROM q_cursos WHERE curso_desc = %s),
-                       %s, %s
+            # Verifica se a nota é um número válido
+            if nota.isnumeric() or (nota.count('.') == 1 and nota.replace('.', '').isnumeric()):
+                nota = float(nota)
+                if 0 <= nota <= 20:
+                    cursor = mydb.cursor()
+                    query = """
+                           INSERT INTO q_avaliacoes (avaliacao_aluno_id, avaliacao_prof_id, avaliacao_curso, avaliacao_data, avaliacao_nota)
+                           SELECT 
+                               (SELECT utilizador_id FROM q_utilizadores WHERE utilizador_nome = %s),
+                               (SELECT utilizador_id FROM q_utilizadores WHERE utilizador_nome = %s),
+                               (SELECT curso_id FROM q_cursos WHERE curso_desc = %s),
+                               %s, %s
                """
-            values = (aluno, professor, curso, data, nota)
-            cursor.execute(query, values)
-            mydb.commit()
+                    values = (aluno, professor, curso, data, nota)
+                    cursor.execute(query, values)
+                    mydb.commit()
 
-            carregar_avaliacoes()
-            limpar_campos()
+                    carregar_avaliacoes()
+                    limpar_campos()
+                else:
+                    messagebox.showinfo("Erro", "A nota deve ser um número de 0 a 20.")
+            else:
+                messagebox.showinfo("Erro", "A nota deve ser um valor numérico.")
         else:
             messagebox.showinfo("Erro", "Preencha todos os campos para inserir uma avaliação.")
 
@@ -170,6 +180,8 @@ def gestao_avaliacoes(content_frame):
         if selected_item:
             avaliacao = tree.item(selected_item)["values"]
             id_avaliacao = avaliacao[5]
+
+            # Verifica se todos os campos estão preenchidos
             if combo_alunos.get() and combo_curso.get() and entry_nota.get() and cal.get() and combo_professores.get():
                 aluno = combo_alunos.get()
                 curso = combo_curso.get()
@@ -177,34 +189,40 @@ def gestao_avaliacoes(content_frame):
                 data = cal.get()
                 professor = combo_professores.get()
 
-                cursor = mydb.cursor()
-                query = """
-                       UPDATE q_avaliacoes SET 
-                           avaliacao_aluno_id = (
-                               SELECT aluno.utilizador_id
-                               FROM q_utilizadores aluno
-                               WHERE aluno.utilizador_nome = %s
-                           ),
-                           avaliacao_curso = (
-                               SELECT c.curso_id
-                               FROM q_cursos c
-                               WHERE c.curso_desc = %s
-                           ),
-                           avaliacao_nota = %s,
-                           avaliacao_data = %s,
-                           avaliacao_prof_id = (
-                               SELECT prof.utilizador_id
-                               FROM q_utilizadores prof
-                               WHERE prof.utilizador_nome = %s
-                           )
-                       WHERE avaliacao_id = %s
+                # Verifica se a nota é um número válido
+                if nota.isnumeric() or (nota.count('.') == 1 and nota.replace('.', '').isnumeric()):
+                    nota = float(nota)
+                    if 0 <= nota <= 20:
+                        cursor = mydb.cursor()
+                        query = """
+                               UPDATE q_avaliacoes SET 
+                                   avaliacao_aluno_id = (
+                                       SELECT aluno.utilizador_id
+                                       FROM q_utilizadores aluno
+                                       WHERE aluno.utilizador_nome = %s
+                                   ),
+                                   avaliacao_curso = (
+                                       SELECT c.curso_id
+                                       FROM q_cursos c
+                                       WHERE c.curso_desc = %s
+                                   ),
+                                   avaliacao_nota = %s,
+                                   avaliacao_data = %s,
+                                   avaliacao_prof_id = (
+                                       SELECT prof.utilizador_id
+                                       FROM q_utilizadores prof
+                                       WHERE prof.utilizador_nome = %s
+                                   )
+                               WHERE avaliacao_id = %s
                """
-                values = (aluno, curso, nota, data, professor, id_avaliacao)
-                cursor.execute(query, values)
-                mydb.commit()
+                    values = (aluno, curso, nota, data, professor, id_avaliacao)
+                    cursor.execute(query, values)
+                    mydb.commit()
 
-                carregar_avaliacoes()
-                limpar_campos()
+                    carregar_avaliacoes()
+                    limpar_campos()
+                else:
+                    messagebox.showinfo("Erro", "A nota deve ser um número de 0 a 20.")
             else:
                 messagebox.showinfo("Erro", "Preencha todos os campos para editar uma avaliação.")
         else:
@@ -318,3 +336,4 @@ def gestao_avaliacoes(content_frame):
     btn_limpar.pack(side='left', padx=5)
 
     frame_gestao_avaliacoes.pack(fill='y', pady=50)
+    limpar_campos()
