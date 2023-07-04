@@ -3,6 +3,7 @@ from tkinter import ttk
 import mysql.connector
 from tkcalendar import DateEntry
 
+# Conectar ao banco de dados
 mydb = mysql.connector.connect(
     host="127.0.0.1",
     user="root",
@@ -13,12 +14,15 @@ mydb = mysql.connector.connect(
 def gestao_avaliacoes(content_frame):
     selected_course = StringVar()
 
+    # Limpa o conteúdo do frame
     for widget in content_frame.winfo_children():
         widget.destroy()
 
     def carregar_avaliacoes():
+        # Limpa as avaliações existentes na treeview
         tree.delete(*tree.get_children())
         cursor = mydb.cursor()
+        # Verifica se um curso foi selecionado
         if selected_course.get() == "Todos" or not selected_course.get():
             query = """
                 SELECT 
@@ -42,6 +46,7 @@ def gestao_avaliacoes(content_frame):
             """
             cursor.execute(query)
         else:
+            # Consulta SQL para selecionar avaliações de um curso específico
             query = """
                 SELECT
                     aluno.utilizador_nome AS aluno_info,
@@ -65,12 +70,16 @@ def gestao_avaliacoes(content_frame):
                     q_cursos.curso_desc = %s;
             """
             cursor.execute(query, (selected_course.get(),))
+        # Obtem todas as avaliações retornadas pela consulta
         avaliacoes = cursor.fetchall()
+        # Insere cada avaliação na treeview
         for avaliacao in avaliacoes:
             tree.insert("", "end", values=avaliacao)
 
     def selecionar_avaliacao(event):
+        # Obtem o item selecionado na treeview
         selected_item = tree.focus()
+        # Verifica se algum item foi selecionado
         if selected_item:
             avaliacao = tree.item(selected_item)["values"]
             combo_alunos.delete(0, END)
@@ -82,7 +91,7 @@ def gestao_avaliacoes(content_frame):
             combo_professores.delete(0, END)
             combo_professores.insert(0, avaliacao[4])
 
-            # Set the course combo box
+            # Define a opção selecionada na combobox de cursos
             if selected_course.get() == "Todos" or not selected_course.get():
                 combo_curso.current(cursos.index(avaliacao[1]))
             else:
@@ -100,9 +109,12 @@ def gestao_avaliacoes(content_frame):
 
     def preencher_combobox_alunos():
         cursor = mydb.cursor()
+
+        # Verifica se um curso foi selecionado
         if selected_course.get() == "Todos" or not selected_course.get():
             cursor.execute("SELECT utilizador_nome FROM q_utilizadores WHERE utilizador_perfil = 1")
         else:
+            # Consulta SQL para selecionar os alunos do curso selecionado
             query = """
                 SELECT 
                     aluno.utilizador_nome
@@ -126,6 +138,7 @@ def gestao_avaliacoes(content_frame):
         combo_professores.delete(0, END)
 
     def adicionar_avaliacao():
+        # Obtem os valores dos campos de entrada de dados
         aluno = combo_alunos.get()
         curso = combo_curso.get()
         nota = entry_nota.get()
@@ -133,6 +146,7 @@ def gestao_avaliacoes(content_frame):
         professor = combo_professores.get()
 
         cursor = mydb.cursor()
+        # Consulta SQL para inserir uma nova avaliação
         query = """
                INSERT INTO q_avaliacoes (avaliacao_aluno_id, avaliacao_prof_id, avaliacao_curso, avaliacao_data, avaliacao_nota)
                SELECT 
@@ -145,15 +159,17 @@ def gestao_avaliacoes(content_frame):
         cursor.execute(query, values)
         mydb.commit()
 
+        # Recarrega as avaliações e limpa os campos
         carregar_avaliacoes()
         limpar_campos()
 
     def editar_avaliacao():
         selected_item = tree.focus()
         if selected_item:
+            # Obtem os valores da avaliação selecionada
             avaliacao = tree.item(selected_item)["values"]
+            # Obtem os valores dos campos de entrada de dados
             id_avaliacao = avaliacao[5]
-
             aluno = combo_alunos.get()
             curso = combo_curso.get()
             nota = entry_nota.get()
@@ -161,6 +177,7 @@ def gestao_avaliacoes(content_frame):
             professor = combo_professores.get()
 
             cursor = mydb.cursor()
+            # Consulta SQL para atualizar a avaliação
             query = """
                    UPDATE q_avaliacoes SET 
                        avaliacao_aluno_id = (
@@ -186,6 +203,7 @@ def gestao_avaliacoes(content_frame):
             cursor.execute(query, values)
             mydb.commit()
 
+            # Recarrega as avaliações e limpa os campos
             carregar_avaliacoes()
             limpar_campos()
 
@@ -201,14 +219,17 @@ def gestao_avaliacoes(content_frame):
             cursor.execute(query, value)
             mydb.commit()
 
+            # Recarregar as avaliações
             carregar_avaliacoes()
 
+    # Criação do frame para a gestão de avaliações
     frame_gestao_avaliacoes = Frame(content_frame)
     frame_gestao_avaliacoes.pack()
 
     label = Label(frame_gestao_avaliacoes, text='Gestão de Avaliações', font=('Arial', 14))
     label.pack(pady=5)
 
+    # Criação da árvore (treeview) para exibir as avaliações
     tree = ttk.Treeview(content_frame, columns=("Aluno", "Curso", "Data", "Nota", "Professor"), show="headings")
     tree.heading("Aluno", text="Aluno")
     tree.column("Aluno", width=150)
@@ -226,6 +247,7 @@ def gestao_avaliacoes(content_frame):
     cursos = [curso[0] for curso in cursor.fetchall()]
     cursos.insert(0, "Todos")
 
+    # Configuração do scroll para a treeview
     scrollbar = ttk.Scrollbar(content_frame, orient="vertical", command=tree.yview)
     tree.configure(yscroll=scrollbar.set)
     scrollbar.pack(side="right", fill="y")

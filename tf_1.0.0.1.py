@@ -79,7 +79,7 @@ button3.pack(pady=10, padx=20, fill='x')
 button4 = Button(menu_frame, text='Gestão de Pagamentos', **button_styles, command=show_gestao_pagamentos)
 button4.pack(pady=10, padx=20, fill='x')
 
-button5 = Button(menu_frame, text='Avaliações de Alunos', **button_styles, command=lambda: janela_avaliacao.gestao_avaliacoes(content_frame))
+button5 = Button(menu_frame, text='Gestão de Avaliações', **button_styles, command=lambda: janela_avaliacao.gestao_avaliacoes(content_frame))
 button5.pack(pady=10, padx=20, fill='x')
 
 button6 = Button(menu_frame, text='Performance de Alunos', **button_styles, command=lambda: janela_performance.gestao_performance(content_frame))
