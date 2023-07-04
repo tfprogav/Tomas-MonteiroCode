@@ -264,6 +264,11 @@ def gestao_avaliacoes(content_frame):
 
     carregar_avaliacoes()
 
+    label_nota = Label(content_frame, text="")
+    label_nota.pack(pady=1)
+    label_nota = Label(content_frame, text="")
+    label_nota.pack(pady=1)
+
     combo_curso = ttk.Combobox(content_frame, values=cursos, textvariable=selected_course)
     combo_curso.current(0)
     combo_curso.bind("<<ComboboxSelected>>", selecionar_curso)
