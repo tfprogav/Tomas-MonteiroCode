@@ -230,11 +230,14 @@ def gestao_avaliacoes(content_frame):
             messagebox.showinfo("Erro", "Selecione uma avaliação para excluir.")
 
     # Criação do frame para a gestão de avaliações
-    frame_gestao_avaliacoes = Frame(content_frame)
+    frame_gestao_avaliacoes = Frame(content_frame, bg='white')
     frame_gestao_avaliacoes.pack()
 
-    label = Label(frame_gestao_avaliacoes, text='Gestão de Avaliações', font=('Arial', 14))
+    label = Label(frame_gestao_avaliacoes, text='Gestão de Avaliações', font=('Arial', 14), bg='white')
     label.pack(pady=5)
+
+    label_nota = Label(content_frame, text="", bg='white')
+    label_nota.pack(pady=1)
 
     # Criação da árvore (treeview) para exibir as avaliações
     tree = ttk.Treeview(content_frame, columns=("Aluno", "Curso", "Data", "Nota", "Professor"), show="headings")
@@ -264,9 +267,9 @@ def gestao_avaliacoes(content_frame):
 
     carregar_avaliacoes()
 
-    label_nota = Label(content_frame, text="")
+    label_nota = Label(content_frame, text="", bg='white')
     label_nota.pack(pady=1)
-    label_nota = Label(content_frame, text="")
+    label_nota = Label(content_frame, text="", bg='white')
     label_nota.pack(pady=1)
 
     combo_curso = ttk.Combobox(content_frame, values=cursos, textvariable=selected_course)
