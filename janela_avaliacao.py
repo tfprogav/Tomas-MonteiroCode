@@ -74,8 +74,11 @@ def gestao_avaliacoes(content_frame):
         # Obtem todas as avaliações retornadas pela consulta
         avaliacoes = cursor.fetchall()
         # Insere cada avaliação na treeview
+        # Insere cada avaliação na treeview
         for avaliacao in avaliacoes:
-            tree.insert("", "end", values=avaliacao)
+            avaliacao_list = list(avaliacao)
+            avaliacao_list[4] = "Professor " + avaliacao_list[4]  # Adiciona o prefixo "Professor "
+            tree.insert("", "end", values=avaliacao_list)
 
     def selecionar_avaliacao(event):
         # Obtem o item selecionado na treeview
@@ -90,7 +93,7 @@ def gestao_avaliacoes(content_frame):
             entry_nota.delete(0, END)
             entry_nota.insert(0, avaliacao[3])
             combo_professores.delete(0, END)
-            combo_professores.insert(0, avaliacao[4])
+            combo_professores.insert(0, avaliacao[4].replace("Professor ", ""))# Remove o prefixo "Professor"
 
             # Define a opção selecionada na combobox de cursos
             if selected_course.get() == "Todos" or not selected_course.get():
@@ -107,6 +110,7 @@ def gestao_avaliacoes(content_frame):
         cursor.execute("SELECT utilizador_nome FROM q_utilizadores WHERE utilizador_perfil = 2")
         professores = [professor[0] for professor in cursor.fetchall()]
         combo_professores['values'] = professores
+
 
     def preencher_combobox_alunos():
         cursor = mydb.cursor()
@@ -137,7 +141,6 @@ def gestao_avaliacoes(content_frame):
         cal.delete(0, END)
         entry_nota.delete(0, END)
         combo_professores.delete(0, END)
-        combo_curso.current(0)
 
     def adicionar_avaliacao():
 
@@ -247,6 +250,46 @@ def gestao_avaliacoes(content_frame):
         else:
             messagebox.showinfo("Erro", "Selecione uma avaliação para excluir.")
 
+    def pesquisar_alunos(event):
+        cursor = mydb.cursor()
+        curso_selecionado = selected_course.get()
+        # Verifica se nenhum curso foi selecionado ou se é "Todos"
+        if curso_selecionado == "Todos" or not curso_selecionado:
+            query = """
+                SELECT utilizador_nome
+                FROM q_utilizadores
+                WHERE utilizador_perfil = 1
+                    AND utilizador_nome LIKE %s;
+            """
+            cursor.execute(query, (combo_alunos.get() + '%',))
+        else:
+            query = """
+                SELECT aluno.utilizador_nome
+                FROM q_utilizadores AS aluno
+                INNER JOIN q_alunos_cursos AS ac ON aluno.utilizador_id = ac.aluno_id
+                INNER JOIN q_cursos AS c ON ac.curso_id = c.curso_id
+                WHERE c.curso_desc = %s
+                    AND aluno.utilizador_nome LIKE %s;
+            """
+            cursor.execute(query, (curso_selecionado, combo_alunos.get() + '%'))
+            # Obtém os resultados da consulta SQL
+        alunos = [aluno[0] for aluno in cursor.fetchall()]
+        # Atualiza os valores do ComboBox com os nomes dos alunos encontrados
+        combo_alunos['values'] = alunos
+
+    def pesquisar_professores(event):
+        cursor = mydb.cursor()
+        query = """
+            SELECT utilizador_nome
+            FROM q_utilizadores
+            WHERE utilizador_perfil = 2
+                AND utilizador_nome LIKE %s;
+        """
+        cursor.execute(query, (combo_professores.get() + '%',))
+        professores = [professor[0] for professor in cursor.fetchall()]
+        # Atualiza os valores do ComboBox com os nomes dos Professores encontrados
+        combo_professores['values'] = professores
+
     # Criação do frame para a gestão de avaliações
     frame_gestao_avaliacoes = Frame(content_frame, bg='white')
     frame_gestao_avaliacoes.pack()
@@ -295,28 +338,33 @@ def gestao_avaliacoes(content_frame):
     combo_curso.bind("<<ComboboxSelected>>", selecionar_curso)
     combo_curso.pack(pady=5)
 
-
+    # Combobox dos Alunos
     label_aluno = Label(content_frame, text="Aluno:")
     label_aluno.pack()
     combo_alunos = ttk.Combobox(content_frame)
     combo_alunos.pack(pady=5)
     preencher_combobox_alunos()
+    combo_alunos.bind("<KeyRelease>", pesquisar_alunos)
 
+    # DateEntry
     label_data = Label(content_frame, text="Data:")
     label_data.pack()
     cal = DateEntry(content_frame, width=12, background='grey', foreground='white', borderwidth=2, date_pattern='yyyy-mm-dd')
     cal.pack()
 
+    # Entry das Notas
     label_nota = Label(content_frame, text="Nota:")
     label_nota.pack()
     entry_nota = Entry(content_frame)
     entry_nota.pack(pady=5)
 
+    # Combobox dos Professores
     label_professor = Label(content_frame, text="Professor:")
     label_professor.pack()
     combo_professores = ttk.Combobox(content_frame)
     combo_professores.pack(pady=5)
     preencher_combobox_professores()
+    combo_professores.bind("<KeyRelease>", pesquisar_professores)
 
     frame_botoes = Frame(content_frame, bg='white')
     frame_botoes.pack(pady=5)
