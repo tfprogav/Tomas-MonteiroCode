@@ -5,8 +5,8 @@ from tkcalendar import DateEntry
 from tkinter import messagebox
 
 # Conectar ao banco de dados
-mydb = mysql.connector.connect(
-    host="127.0.0.1",
+mydb = mysql.connector.connect( #ligação á database
+    host="localhost",
     user="root",
     password="",
     database="tf_prog_av"
@@ -18,6 +18,7 @@ def gestao_avaliacoes(content_frame):
     # Limpa o conteúdo do frame
     for widget in content_frame.winfo_children():
         widget.destroy()
+
 
     def carregar_avaliacoes():
         # Limpa as avaliações existentes na treeview
@@ -80,10 +81,11 @@ def gestao_avaliacoes(content_frame):
             avaliacao_list[4] = "Professor " + avaliacao_list[4]  # Adiciona o prefixo "Professor "
             tree.insert("", "end", values=avaliacao_list)
 
+
     def selecionar_avaliacao(event):
-        # Obtem o item selecionado na treeview
+        # Obtem a avalição selecionada na treeview
         selected_item = tree.focus()
-        # Verifica se algum item foi selecionado
+        # Verifica se alguma avaliação foi selecionada
         if selected_item:
             avaliacao = tree.item(selected_item)["values"]
             combo_alunos.delete(0, END)
@@ -100,10 +102,13 @@ def gestao_avaliacoes(content_frame):
                 combo_curso.current(cursos.index(avaliacao[1]))
             else:
                 combo_curso.current(cursos.index(selected_course.get()))
+            # Faz update da combo_alunos para mostrar os alunos comforme o curso selecionado
+            preencher_combobox_alunos(avaliacao[1])
 
     def selecionar_curso(event):
+        selected_course.set(combo_curso.get())
         carregar_avaliacoes()
-        preencher_combobox_alunos()
+        preencher_combobox_alunos(selected_course.get())
 
     def preencher_combobox_professores():
         cursor = mydb.cursor()
@@ -112,11 +117,11 @@ def gestao_avaliacoes(content_frame):
         combo_professores['values'] = professores
 
 
-    def preencher_combobox_alunos():
+    def preencher_combobox_alunos(curso=None):
         cursor = mydb.cursor()
 
         # Verifica se um curso foi selecionado
-        if selected_course.get() == "Todos" or not selected_course.get():
+        if curso is None or curso == "Todos":
             cursor.execute("SELECT utilizador_nome FROM q_utilizadores WHERE utilizador_perfil = 1")
         else:
             # Consulta SQL para selecionar os alunos do curso selecionado
@@ -132,7 +137,7 @@ def gestao_avaliacoes(content_frame):
                 WHERE 
                     c.curso_desc = %s;
             """
-            cursor.execute(query, (selected_course.get(),))
+            cursor.execute(query, (curso,))
         alunos = [aluno[0] for aluno in cursor.fetchall()]
         combo_alunos['values'] = alunos
 
@@ -318,7 +323,7 @@ def gestao_avaliacoes(content_frame):
     cursos = [curso[0] for curso in cursor.fetchall()]
     cursos.insert(0, "Todos")
 
-    # Configuração do scroll para a treeview
+    # Configuração do "scroll" para a treeview
     scrollbar = ttk.Scrollbar(content_frame, orient="vertical", command=tree.yview)
     tree.configure(yscroll=scrollbar.set)
     scrollbar.pack(side="right", fill="y")
